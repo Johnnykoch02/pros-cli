@@ -170,7 +170,7 @@ class Terminal(object):
     """This class is loosely based off of the pyserial miniterm"""
 
     def __init__(self, port_instance: StreamDevice, transformations=(),
-                 output_raw: bool = False, request_banner: bool = True):
+                 output_raw: bool = False, request_banner: bool = True, test=False):
         self.device = port_instance
         self.device.subscribe(b'sout')
         self.device.subscribe(b'serr')
@@ -186,6 +186,10 @@ class Terminal(object):
         signal.signal(signal.SIGINT, self.catch_sigint)  # SIGINT handler
         self.console = Console()
         self.console.output = colorama.AnsiToWin32(self.console.output).stream
+    
+    def write_to_screen(self, str):
+        self.device.write(str.encode(encoding='utf-8'))
+        self.console.write(str)
 
     def _start_rx(self):
         self._reader_alive = True
@@ -270,6 +274,7 @@ class Terminal(object):
                 logger(__name__).debug(e)
             self.stop()
         logger(__name__).info('Terminal transmitter dying')
+    
 
     def catch_sigint(self):
         self.no_sigint = False
